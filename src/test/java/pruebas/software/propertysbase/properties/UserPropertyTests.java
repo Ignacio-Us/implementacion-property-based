@@ -59,6 +59,43 @@ public class UserPropertyTests {
         assertThat(retrievedUser.get().getPassword()).isEqualTo(createdUser.getPassword());
     }
 
+    @Property(tries = 1000)
+    void existingUsersShouldBeUpdatedSuccessfully(
+        @ForAll("validNames") String name1, @ForAll("validEmails") String email1, @ForAll("validPasswords") String password1,
+        @ForAll("validNames") String name2, @ForAll("validEmails") String email2, @ForAll("validPasswords") String password2
+    ) {
+        // 1. Crear usuario original
+        User originalUser = userService.create(User.builder()
+                .name(name1)
+                .email(email1)
+                .password(password1)
+                .build());
+
+        // 2. Preparar datos de actualización
+        User updateData = User.builder()
+                .name(name2)
+                .email(email2)
+                .password(password2)
+                .build();
+
+        // 3. Ejecutar actualización
+        User updatedUser = userService.update(originalUser.getId(), updateData);
+
+        // 4. Assert: Invariantes de Actualización
+        // El ID debe mantenerse igual, pero los datos deben ser los nuevos
+        assertThat(updatedUser.getId()).isEqualTo(originalUser.getId());
+        assertThat(updatedUser.getName()).isEqualTo(name2);
+        assertThat(updatedUser.getEmail()).isEqualTo(email2);
+        assertThat(updatedUser.getPassword()).isEqualTo(password2);
+
+        // 5. Verificar que al recuperarlo de base de datos persistan los cambios
+        Optional<User> retrievedUser = userService.findById(originalUser.getId());
+        assertThat(retrievedUser).isPresent();
+        assertThat(retrievedUser.get().getName()).isEqualTo(name2);
+        assertThat(retrievedUser.get().getEmail()).isEqualTo(email2);
+        assertThat(retrievedUser.get().getPassword()).isEqualTo(password2);
+    }
+
     // GENERADORES personalizados para cada propiedad
     @Provide
     Arbitrary<String> validNames() {
