@@ -8,6 +8,7 @@ import net.jqwik.api.Property;
 import net.jqwik.api.Provide;
 import pruebas.software.propertysbase.domain.model.User;
 import pruebas.software.propertysbase.domain.service.UserService;
+import pruebas.software.propertysbase.domain.service.exceptions.UserNotFoundException;
 import pruebas.software.propertysbase.infrastructure.persistence.InMemoryUserRepository;
 import static org.assertj.core.api.Assertions.*;
 
@@ -94,6 +95,45 @@ public class UserPropertyTests {
         assertThat(retrievedUser.get().getName()).isEqualTo(name2);
         assertThat(retrievedUser.get().getEmail()).isEqualTo(email2);
         assertThat(retrievedUser.get().getPassword()).isEqualTo(password2);
+    }
+
+    @Property(tries = 1000)
+    void existingUsersShouldBeDeletedSuccessfully(
+        @ForAll("validNames") String name, 
+        @ForAll("validEmails") String email, 
+        @ForAll("validPasswords") String password
+    ) {
+        User originalUser = userService.create(User.builder()
+                .name(name)
+                .email(email)
+                .password(password)
+                .build());
+        
+        Long userId = originalUser.getId();
+
+        userService.delete(userId);
+
+        Optional<User> retrievedUser = userService.findById(userId);
+        
+        assertThat(retrievedUser).isEmpty();
+        
+        //Se comprueba que la cantidad de usuarios en el sistema es 0
+        assertThat(userService.count()).isEqualTo(0);
+    }
+
+    @Property(tries = 100)
+    void deletingNonExistentUserShouldBeHandledGracefully(
+        @ForAll("validNames") String name, 
+        @ForAll("validEmails") String email, 
+        @ForAll("validPasswords") String password
+    ) {
+        
+        User user = userService.create(User.builder().name(name).email(email).password(password).build());
+        // Para garantizar un ID que NO existe en el sistema actual.
+        Long nonExistentId = user.getId() + 9999L;
+
+        assertThatThrownBy(() -> userService.delete(nonExistentId))
+            .isInstanceOf(UserNotFoundException.class);
     }
 
     // GENERADORES personalizados para cada propiedad
