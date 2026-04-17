@@ -23,4 +23,14 @@ public class UserService {
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
     }
+
+    public User update(Long id, User updatedUser) {
+        if (!updatedUser.isValid()) {
+            throw new IllegalArgumentException("Datos de usuario inválidos");
+        }
+        return userRepository.findById(id).map(existingUser -> {
+            User userToSave = updatedUser.toBuilder().id(id).build();
+            return userRepository.save(userToSave);
+        }).orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+    }
 }
