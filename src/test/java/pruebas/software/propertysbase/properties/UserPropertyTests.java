@@ -1,5 +1,6 @@
 package pruebas.software.propertysbase.properties;
 
+import java.util.Optional;
 import net.jqwik.api.Arbitraries;
 import net.jqwik.api.Arbitrary;
 import net.jqwik.api.ForAll;
@@ -32,6 +33,30 @@ public class UserPropertyTests {
         assertThat(createdUser.getId()).isPositive();
         assertThat(createdUser.getName()).isEqualTo(name);
         assertThat(createdUser.getEmail()).isEqualTo(email);
+    }
+
+    @Property(tries = 1000)
+    void createdUsersShouldBeRetrievableById(
+        @ForAll("validNames") String name,
+        @ForAll("validEmails") String email,
+        @ForAll("validPasswords") String password
+    ) {
+        User newUser = User.builder()
+                .name(name)
+                .email(email)
+                .password(password)
+                .build();
+
+        User createdUser = userService.create(newUser);
+        
+        Optional<User> retrievedUser = userService.findById(createdUser.getId());
+
+        // Assert: Invariante de Lectura/Recuperación
+        assertThat(retrievedUser).isPresent();
+        assertThat(retrievedUser.get().getId()).isEqualTo(createdUser.getId());
+        assertThat(retrievedUser.get().getName()).isEqualTo(createdUser.getName());
+        assertThat(retrievedUser.get().getEmail()).isEqualTo(createdUser.getEmail());
+        assertThat(retrievedUser.get().getPassword()).isEqualTo(createdUser.getPassword());
     }
 
     // GENERADORES personalizados para cada propiedad
