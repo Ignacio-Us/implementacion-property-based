@@ -1,6 +1,5 @@
 package pruebas.software.propertysbase.infrastructure.persistence;
 
-
 import pruebas.software.propertysbase.domain.model.User;
 import pruebas.software.propertysbase.domain.repository.UserRepository;
 
@@ -14,7 +13,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class InMemoryUserRepository implements UserRepository {
     private final Map<Long, User> store = new ConcurrentHashMap<>();
-    
+
     // simulamos el autoincremento de una DB real
     private final AtomicLong idGenerator = new AtomicLong(1);
 
@@ -35,5 +34,15 @@ public class InMemoryUserRepository implements UserRepository {
     @Override
     public Optional<User> findById(Long id) {
         return Optional.ofNullable(store.get(id));
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        store.remove(id);
+    }
+
+    @Override
+    public long count() {
+        return store.size();
     }
 }

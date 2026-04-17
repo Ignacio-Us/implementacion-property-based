@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import pruebas.software.propertysbase.domain.model.User;
 import pruebas.software.propertysbase.domain.repository.UserRepository;
+import pruebas.software.propertysbase.domain.service.exceptions.UserNotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -32,5 +33,16 @@ public class UserService {
             User userToSave = updatedUser.toBuilder().id(id).build();
             return userRepository.save(userToSave);
         }).orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+    }
+
+    public void delete(Long id) {
+        if (!userRepository.findById(id).isPresent()) {
+            throw new UserNotFoundException(id);
+        }
+        userRepository.deleteById(id);
+    }
+
+    public long count() {
+        return userRepository.count();
     }
 }
