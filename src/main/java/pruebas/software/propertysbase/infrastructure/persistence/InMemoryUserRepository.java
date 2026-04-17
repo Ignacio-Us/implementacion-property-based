@@ -5,6 +5,7 @@ import pruebas.software.propertysbase.domain.model.User;
 import pruebas.software.propertysbase.domain.repository.UserRepository;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -29,5 +30,10 @@ public class InMemoryUserRepository implements UserRepository {
             store.put(user.getId(), user);
             return user;
         }
+    }
+
+    @Override
+    public Optional<User> findById(Long id) {
+        return Optional.ofNullable(store.get(id));
     }
 }

@@ -1,5 +1,6 @@
 package pruebas.software.propertysbase.domain.service;
 
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -17,5 +18,9 @@ public class UserService {
             throw new IllegalArgumentException("Datos de usuario inválidos");
         }
         return userRepository.save(user);
+    }
+
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
     }
 }
